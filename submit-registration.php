@@ -1,5 +1,7 @@
 <?php
-// Database connection settings
+session_start();
+
+// Database connection
 $servername = "localhost";
 $dbusername = "root";
 $dbpassword = "";
@@ -20,9 +22,7 @@ $createTableSQL = "CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )";
-if (!$conn->query($createTableSQL)) {
-    die("Error creating table: " . $conn->error);
-}
+$conn->query($createTableSQL);
 
 // Get form data
 $fullname = $_POST['fullname'];
@@ -36,16 +36,22 @@ if ($password !== $confirm_password) {
     exit();
 }
 
+// Hash password
 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
+// Insert user
 $sql = "INSERT INTO users (fullname, email, username, password) VALUES (?, ?, ?, ?)";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("ssss", $fullname, $email, $username, $hashed_password);
 
 if ($stmt->execute()) {
+    // Store username in session
+    $_SESSION['username'] = $username;
+
+    // Show popup and redirect to home.php
     echo "<script>
-        alert('Registration Successful!');
-        window.location.href = 'Login.html';
+        alert('Registration Successful! Welcome, $username');
+        window.location.href = 'home.php';
     </script>";
 } else {
     echo "<script>

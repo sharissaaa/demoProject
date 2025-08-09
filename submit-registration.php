@@ -1,19 +1,17 @@
 <?php
 // Database connection settings
-$servername = "localhost";  // XAMPP default
-$dbusername = "root";       // XAMPP default MySQL username
-$dbpassword = "";           // XAMPP default MySQL password (empty)
-$dbname = "demo_db";        // Your database name
+$servername = "localhost";
+$dbusername = "root";
+$dbpassword = "";
+$dbname = "demo_db";
 
-// Create connection
 $conn = new mysqli($servername, $dbusername, $dbpassword, $dbname);
 
-// Check connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Create table if it doesn't exist
+// Create table if not exists
 $createTableSQL = "CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     fullname VARCHAR(100) NOT NULL,
@@ -33,26 +31,29 @@ $username = $_POST['username'];
 $password = $_POST['password'];
 $confirm_password = $_POST['confirm_password'];
 
-// Check if passwords match
 if ($password !== $confirm_password) {
-    die("Passwords do not match.");
+    echo "<script>alert('Passwords do not match.'); window.history.back();</script>";
+    exit();
 }
 
-// Hash the password for security
 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-// Insert data into the database
 $sql = "INSERT INTO users (fullname, email, username, password) VALUES (?, ?, ?, ?)";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("ssss", $fullname, $email, $username, $hashed_password);
 
 if ($stmt->execute()) {
-    echo "Registration successful! <a href='Login.html'>Go to login</a>";
+    echo "<script>
+        alert('Registration Successful!');
+        window.location.href = 'Login.html';
+    </script>";
 } else {
-    echo "Error: " . $stmt->error;
+    echo "<script>
+        alert('Error: " . addslashes($stmt->error) . "');
+        window.history.back();
+    </script>";
 }
 
-// Close connection
 $stmt->close();
 $conn->close();
 ?>
